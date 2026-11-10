@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Solitario - Mazo Doble</title>
+    <!-- Favicon con el As de picas -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>♠️</text></svg>">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container" id="game-container">
+        <!-- Panel superior: Mazo, Descarte y 8 Fundaciones -->
+        <div class="top-section">
+            <div class="stock-waste-container">
+                <div id="stock" class="pile stock-pile" title="Mazo (Clic para robar o reciclar)"></div>
+                <div id="waste" class="pile waste-pile" title="Descarte"></div>
+            </div>
+            <div class="foundations-container">
+                <div id="foundation-0" class="pile foundation" data-suit="hearts" data-symbol="♥" title="Fundación: Corazones (♥)"></div>
+                <div id="foundation-1" class="pile foundation" data-suit="hearts" data-symbol="♥" title="Fundación: Corazones (♥)"></div>
+                <div id="foundation-2" class="pile foundation" data-suit="diamonds" data-symbol="♦" title="Fundación: Diamantes (♦)"></div>
+                <div id="foundation-3" class="pile foundation" data-suit="diamonds" data-symbol="♦" title="Fundación: Diamantes (♦)"></div>
+                <div id="foundation-4" class="pile foundation" data-suit="spades" data-symbol="♠" title="Fundación: Picas (♠)"></div>
+                <div id="foundation-5" class="pile foundation" data-suit="spades" data-symbol="♠" title="Fundación: Picas (♠)"></div>
+                <div id="foundation-6" class="pile foundation" data-suit="clubs" data-symbol="♣" title="Fundación: Tréboles (♣)"></div>
+                <div id="foundation-7" class="pile foundation" data-suit="clubs" data-symbol="♣" title="Fundación: Tréboles (♣)"></div>
+            </div>
+        </div>
+
+        <!-- Panel inferior: 10 Pilas del Tableau (Tablero) -->
+        <div class="tableau-container">
+            <div id="tableau-0" class="tableau-pile"></div>
+            <div id="tableau-1" class="tableau-pile"></div>
+            <div id="tableau-2" class="tableau-pile"></div>
+            <div id="tableau-3" class="tableau-pile"></div>
+            <div id="tableau-4" class="tableau-pile"></div>
+            <div id="tableau-5" class="tableau-pile"></div>
+            <div id="tableau-6" class="tableau-pile"></div>
+            <div id="tableau-7" class="tableau-pile"></div>
+            <div id="tableau-8" class="tableau-pile"></div>
+            <div id="tableau-9" class="tableau-pile"></div>
+        </div>
+
+        <!-- Controles y Mensajes -->
+        <div class="controls">
+            <button id="restart-btn">Reiniciar Partida</button>
+            <span id="message"></span>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

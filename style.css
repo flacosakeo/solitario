@@ -1,0 +1,337 @@
+:root {
+    /* Cálculo dinámico para que las 10 columnas encajen perfectamente en cualquier pantalla */
+    --side-padding: clamp(4px, 1.5vw, 12px);
+    --card-gap: clamp(2px, 0.8vw, 8px);
+    /* 10 columnas con 9 espacios entre ellas */
+    --card-width: clamp(33px, calc((100vw - (2 * var(--side-padding)) - (9 * var(--card-gap))) / 10), 85px);
+    --card-height: calc(var(--card-width) * 1.45);
+    --card-radius: clamp(3px, calc(var(--card-width) * 0.08), 8px);
+    --cascade-step: clamp(10px, calc(var(--card-width) * 0.28), 26px);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    background-color: #076324; /* Verde clásico de paño de casino */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: var(--side-padding);
+    overflow-x: auto;
+    touch-action: manipulation;
+}
+
+.game-container {
+    width: 100%;
+    max-width: 950px;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(12px, 2.5vw, 24px);
+    user-select: none;
+    margin: 0 auto;
+}
+
+/* Panel superior: 10 cartas en total (2 en stock-waste + 8 en foundations) */
+.top-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
+    gap: var(--card-gap);
+}
+
+.stock-waste-container {
+    display: flex;
+    gap: var(--card-gap);
+    flex-shrink: 0;
+}
+
+.foundations-container {
+    display: flex;
+    gap: var(--card-gap);
+    flex-shrink: 0;
+}
+
+/* Panel inferior: 10 columnas en el Tableau */
+.tableau-container {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--card-gap);
+    width: 100%;
+    min-height: calc(var(--card-height) * 2.2);
+    align-items: flex-start;
+}
+
+/* Estilos base de las pilas (Slots vacíos) */
+.pile, .tableau-pile, .foundation {
+    width: var(--card-width);
+    height: var(--card-height);
+    border: clamp(1px, calc(var(--card-width) * 0.025), 2px) dashed rgba(255, 255, 255, 0.35);
+    border-radius: var(--card-radius);
+    position: relative;
+    background-color: rgba(0, 0, 0, 0.12);
+    flex-shrink: 0;
+}
+
+/* Indicador de reciclar mazo cuando el stock está vacío */
+.stock-pile:empty {
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.stock-pile:empty::after {
+    content: '↺';
+    font-size: clamp(1.1rem, calc(var(--card-width) * 0.45), 2.4rem);
+    color: rgba(255, 255, 255, 0.4);
+    line-height: 1;
+}
+
+/* Símbolos fijos de las fundaciones */
+.foundation {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.foundation::before {
+    content: attr(data-symbol);
+    position: absolute;
+    font-size: clamp(1rem, calc(var(--card-width) * 0.42), 2.2rem);
+    color: rgba(255, 255, 255, 0.22);
+    pointer-events: none;
+    user-select: none;
+    line-height: 1;
+}
+
+.foundation[data-suit="hearts"]::before,
+.foundation[data-suit="diamonds"]::before {
+    color: rgba(255, 120, 120, 0.3);
+}
+
+.foundation[data-suit="spades"]::before,
+.foundation[data-suit="clubs"]::before {
+    color: rgba(20, 20, 20, 0.4);
+}
+
+/* Estilos de las Cartas */
+.card {
+    width: var(--card-width);
+    height: var(--card-height);
+    background-color: #ffffff;
+    border-radius: var(--card-radius);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.35);
+    position: absolute;
+    cursor: pointer;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -webkit-touch-callout: none !important;
+    touch-action: none !important;
+    transition: box-shadow 0.15s ease;
+    overflow: hidden;
+}
+
+.card:hover {
+    box-shadow: 0 3px 8px rgba(0,0,0,0.45);
+}
+
+.card.red {
+    color: #c62828;
+}
+
+.card.black {
+    color: #1a1a1a;
+}
+
+.card.back {
+    background: repeating-linear-gradient(
+        45deg,
+        #1565c0,
+        #1565c0 clamp(4px, calc(var(--card-width) * 0.1), 10px),
+        #1976d2 clamp(4px, calc(var(--card-width) * 0.1), 10px),
+        #1976d2 clamp(8px, calc(var(--card-width) * 0.2), 20px)
+    );
+    border: clamp(1px, calc(var(--card-width) * 0.025), 2px) solid #ffffff;
+    cursor: pointer;
+}
+
+.card.selected {
+    box-shadow: 0 0 0 clamp(2px, calc(var(--card-width) * 0.04), 3px) #ffd600, 0 4px 12px rgba(0,0,0,0.5) !important;
+    z-index: 99 !important;
+}
+
+/* Estado de la carta original mientras se arrastra su clon */
+.card.dragging-source {
+    opacity: 0.25 !important;
+}
+
+/* Contenedor flotante para cartas en arrastre (funciona en móvil y PC) */
+.drag-floating-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 99999;
+    will-change: transform;
+    filter: drop-shadow(0 clamp(4px, 1.5vw, 10px) clamp(8px, 2.5vw, 18px) rgba(0, 0, 0, 0.45));
+}
+
+.drag-floating-container .card {
+    position: absolute;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    pointer-events: none;
+}
+
+/* Esquinas de la carta (Índice de valor y palo) */
+.card-corner {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: clamp(0.55rem, calc(var(--card-width) * 0.18), 0.82rem);
+    font-weight: 800;
+    line-height: 1;
+    pointer-events: none;
+    z-index: 2;
+    padding: 1px;
+}
+
+.card-corner.top-left {
+    top: clamp(1px, calc(var(--card-width) * 0.03), 4px);
+    left: clamp(2px, calc(var(--card-width) * 0.04), 4px);
+}
+
+.card-corner.bottom-right {
+    bottom: clamp(1px, calc(var(--card-width) * 0.03), 4px);
+    right: clamp(2px, calc(var(--card-width) * 0.04), 4px);
+    transform: rotate(180deg);
+}
+
+.card-corner span {
+    display: block;
+}
+
+/* Centro de la carta (Pips o Arte de Corte) */
+.card-center {
+    position: absolute;
+    top: clamp(3px, calc(var(--card-width) * 0.05), 6px);
+    bottom: clamp(3px, calc(var(--card-width) * 0.05), 6px);
+    left: clamp(10px, calc(var(--card-width) * 0.2), 17px);
+    right: clamp(10px, calc(var(--card-width) * 0.2), 17px);
+    pointer-events: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Contenedor de pips según el número */
+.pips-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.pip {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    font-size: clamp(0.48rem, calc(var(--card-width) * 0.16), 0.88rem);
+    line-height: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.pip.flip {
+    transform: translate(-50%, -50%) rotate(180deg);
+}
+
+.pip.size-large {
+    font-size: clamp(1.1rem, calc(var(--card-width) * 0.38), 2.2rem);
+}
+
+.pip.size-med {
+    font-size: clamp(0.6rem, calc(var(--card-width) * 0.2), 1.15rem);
+}
+
+.pip.size-small {
+    font-size: clamp(0.42rem, calc(var(--card-width) * 0.13), 0.78rem);
+}
+
+/* Arte de figuras de la corte (J, Q, K) */
+.face-art-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* Posicionamiento en el Tableau con efecto cascada dinámico */
+.tableau-pile {
+    position: relative;
+    min-height: calc(var(--card-height) + max(0, var(--card-count, 1) - 1) * var(--cascade-step));
+    transition: min-height 0.15s ease;
+}
+
+.tableau-pile .card {
+    position: absolute;
+    top: calc(var(--card-index, 0) * var(--cascade-step));
+    left: 0;
+}
+
+/* Controles */
+.controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-top: 8px;
+    padding: 6px 0;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+#restart-btn {
+    padding: clamp(6px, 1.5vw, 10px) clamp(12px, 3vw, 22px);
+    background-color: #ffb300;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: clamp(0.8rem, 2.5vw, 1rem);
+    color: #212121;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+    touch-action: manipulation;
+}
+
+#restart-btn:hover {
+    background-color: #ffa000;
+}
+
+#restart-btn:active {
+    transform: scale(0.97);
+}
+
+#message {
+    color: #ffffff;
+    font-weight: bold;
+    font-size: clamp(0.85rem, 2.8vw, 1.2rem);
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
+}
+
+/* Medios reducidos o modo horizontal en móviles (Landscape) */
+@media (max-height: 520px) {
+    :root {
+        --cascade-step: clamp(8px, calc(var(--card-width) * 0.2), 16px);
+    }
+    .game-container {
+        gap: 10px;
+    }
+}
